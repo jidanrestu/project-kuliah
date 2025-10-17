@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Monitoring dan Kendali Otomatis Kondisi Ruangan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .block-diagram {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .block {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            min-width: 180px;
+            margin: 10px;
+            border: 3px solid;
+            transition: transform 0.3s;
+        }
+        
+        .block:hover {
+            transform: translateY(-5px);
+        }
+        
+        .block.input {
+            border-color: #4CAF50;
+        }
+        
+        .block.process {
+            border-color: #2196F3;
+        }
+        
+        .block.output {
+            border-color: #FF9800;
+        }
+        
+        .block-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        
+        .block h3 {
+            margin: 10px 0;
+            font-size: 1.2em;
+        }
+        
+        .arrow {
+            font-size: 2.5em;
+            color: #667eea;
+            margin: 0 10px;
+        }
+        
+        .feedback-arrow {
+            width: 100%;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #764ba2;
+            font-weight: bold;
+        }
+        
+        .components-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .component-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 5px solid;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        
+        .component-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        
+        .component-card.sensor {
+            border-left-color: #4CAF50;
+        }
+        
+        .component-card.controller {
+            border-left-color: #2196F3;
+        }
+        
+        .component-card.actuator {
+            border-left-color: #FF9800;
+        }
+        
+        .component-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .component-card .icon {
+            font-size: 1.5em;
+        }
+        
+        .component-card p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        
+        .component-card .spec {
+            background: #f0f0f0;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            margin-top: 10px;
+            color: #666;
+        }
+        
+        .flowchart {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 30px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .flow-step {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .flow-step h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        .flow-step p {
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .logic-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .logic-box code {
+            display: block;
+            margin: 5px 0;
+            color: #333;
+        }
+        
+        .threshold-table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .threshold-table th,
+        .threshold-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .threshold-table th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .threshold-table tr:hover {
+            background: #f5f5f5;
+        }
+        
+        .system-architecture {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .arch-layer {
+            margin: 25px 0;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px dashed #ccc;
+        }
+        
+        .arch-layer h4 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .arch-layer.input-layer {
+            background: #e8f5e9;
+            border-color: #4CAF50;
+        }
+        
+        .arch-layer.process-layer {
+            background: #e3f2fd;
+            border-color: #2196F3;
+        }
+        
+        .arch-layer.output-layer {
+            background: #fff3e0;
+            border-color: #FF9800;
+        }
+        
+        .component-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .component-item {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-weight: 500;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 Sistem Monitoring dan Kendali Otomatis Kondisi Ruangan</h1>
+            <p>Automatic Control System untuk Monitoring Suhu, Kelembapan, dan Gas</p>
+        </div>
+
+        <div class="section">
+            <h2>📊 Diagram Blok Sistem (Closed-Loop Control)</h2>
+            <div class="block-diagram">
+                <div class="block input">
+                    <div class="block-icon">📡</div>
+                    <h3>INPUT</h3>
+                    <p>Sensor Layer</p>
+                    <small>DHT11/22 & MQ-2</small>
+                </div>
+                
+                <div class="arrow">→</div>
+                
+                <div class="block process">
+                    <div class="block-icon">🧠</div>
+                    <h3>PROSES</h3>
+                    <p>Controller</p>
+                    <small>Arduino Uno R3</small>
+                </div>
+                
+                <div class="arrow">→</div>
+                
+                <div class="block output">
+                    <div class="block-icon">⚙️</div>
+                    <h3>OUTPUT</h3>
+                    <p>Actuator Layer</p>
+                    <small>Kipas & Buzzer</small>
+                </div>
+            </div>
+            <div class="feedback-arrow">
+                ↑_____________ FEEDBACK LOOP (Sensor Data) _____________↓
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Tujuan dan Fungsi Sistem</h2>
+            <p style="line-height: 1.8; font-size: 1.1em; color: #555;">
+                Sistem ini dirancang sebagai <strong>Automatic Control System</strong> yang secara real-time memantau 
+                kondisi vital ruangan meliputi <strong>suhu</strong>, <strong>kelembapan udara</strong>, dan 
+                <strong>konsentrasi gas berbahaya</strong>. Ketika salah satu parameter melampaui ambang batas 
+                (setpoint), sistem akan otomatis mengaktifkan kipas untuk sirkulasi udara dan buzzer sebagai 
+                alarm peringatan tanpa memerlukan intervensi manual.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>🔧 Komponen Sistem Berdasarkan Fungsi</h2>
+            
+            <h3 style="color: #4CAF50; margin: 30px 0 20px 0; font-size: 1.5em;">
+                📡 1. BAGIAN INPUT (Sensing Layer - 感知層)
+            </h3>
+            <p style="margin-bottom: 20px; color: #555;">
+                Lapisan ini bertugas mengumpulkan data lingkungan secara real-time
+            </p>
+            
+            <div class="components-grid">
+                <div class="component-card sensor">
+                    <h3><span class="icon">🌡️</span> Sensor DHT11 / DHT22</h3>
+                    <p><strong>Fungsi:</strong> Mengukur suhu dan kelembapan udara secara simultan</p>
+                    <p><strong>Tipe:</strong> Sensor Digital</p>
+                    <p><strong>Output:</strong> Data digital via protokol 1-wire</p>
+                    <div class="spec">
+                        <strong>DHT11:</strong> Suhu 0-50°C (±2°C), Kelembapan 20-80% (±5%)
+                    </div>
+                    <div class="spec">
+                        <strong>DHT22:</strong> Suhu -40-80°C (±0.5°C), Kelembapan 0-100% (±2%) - Lebih Akurat
+                    </div>
+                </div>
+                
+                <div class="component-card sensor">
+                    <h3><span class="icon">💨</span> Sensor Gas MQ-2</h3>
+                    <p><strong>Fungsi:</strong> Mendeteksi gas mudah terbakar dan asap</p>
+                    <p><strong>Gas Terdeteksi:</strong> LPG, Propana, Metana, Hidrogen, Asap</p>
+                    <p><strong>Output:</strong> Sinyal analog (0-1023)</p>
+                    <div class="spec">
+                        <strong>Range:</strong> 300-10,000 ppm
+                    </div>
+                    <div class="spec">
+                        <strong>Waktu Pemanasan:</strong> ~20 detik
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="color: #2196F3; margin: 30px 0 20px 0; font-size: 1.5em;">
+                🧠 2. BAGIAN PROSES (Control Layer)
+            </h3>
+            <p style="margin-bottom: 20px; color: #555;">
+                Unit pemrosesan yang menjalankan logika pengambilan keputusan
+            </p>
+            
+            <div class="components-grid">
+                <div class="component-card controller">
+                    <h3><span class="icon">⚡</span> Arduino Uno R3</h3>
+                    <p><strong>Fungsi:</strong> Mikrokontroler utama sebagai otak sistem</p>
+                    <p><strong>Prosesor:</strong> ATmega328P</p>
+                    <p><strong>Tugas:</strong> Membaca sensor, membandingkan dengan threshold, mengontrol aktuator</p>
+                    <div class="spec">
+                        <strong>Digital I/O:</strong> 14 pin (6 PWM)
+                    </div>
+                    <div class="spec">
+                        <strong>Analog Input:</strong> 6 pin (10-bit ADC)
+                    </div>
+                    <div class="spec">
+                        <strong>Tegangan:</strong> 5V DC
+                    </div>
+                </div>
+                
+                <div class="component-card controller">
+                    <h3><span class="icon">📺</span> LCD 16x2 + Modul I2C</h3>
+                    <p><strong>Fungsi:</strong> Menampilkan data real-time</p>
+                    <p><strong>Informasi Ditampilkan:</strong> Suhu (°C), Kelembapan (%), Level Gas (ppm)</p>
+                    <p><strong>Modul I2C:</strong> Menyederhanakan koneksi (hanya 2 pin: SDA & SCL)</p>
+                    <div class="spec">
+                        <strong>Display:</strong> 16 karakter x 2 baris
+                    </div>
+                    <div class="spec">
+                        <strong>Backlight:</strong> Biru/Hijau
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="color: #FF9800; margin: 30px 0 20px 0; font-size: 1.5em;">
+                ⚙️ 3. BAGIAN OUTPUT (Actuator Layer)
+            </h3>
+            <p style="margin-bottom: 20px; color: #555;">
+                Perangkat yang mengeksekusi perintah kontroler
+            </p>
+            
+            <div class="components-grid">
+                <div class="component-card actuator">
+                    <h3><span class="icon">🌀</span> Kipas DC 12V</h3>
+                    <p><strong>Fungsi:</strong> Sirkulasi udara untuk menurunkan suhu dan membuang gas berbahaya</p>
+                    <p><strong>Kontrol:</strong> Via Modul Relay (ON/OFF)</p>
+                    <div class="spec">
+                        <strong>Tegangan:</strong> 12V DC
+                    </div>
+                    <div class="spec">
+                        <strong>Arus:</strong> ~0.1-0.3A
+                    </div>
+                </div>
+                
+                <div class="component-card actuator">
+                    <h3><span class="icon">🔊</span> Buzzer Aktif 5V</h3>
+                    <p><strong>Fungsi:</strong> Alarm peringatan audio saat kondisi berbahaya</p>
+                    <p><strong>Tipe:</strong> Active Buzzer (menghasilkan suara sendiri)</p>
+                    <p><strong>Kontrol:</strong> Langsung dari pin digital Arduino</p>
+                    <div class="spec">
+                        <strong>Tegangan:</strong> 5V DC
+                    </div>
+                    <div class="spec">
+                        <strong>Frekuensi:</strong> ~2-4 kHz
+                    </div>
+                </div>
+                
+                <div class="component-card actuator">
+                    <h3><span class="icon">🔌</span> Modul Relay 1 Channel 5V</h3>
+                    <p><strong>Fungsi:</strong> Saklar elektronik untuk kipas 12V</p>
+                    <p><strong>Peran:</strong> Jembatan antara Arduino (5V) dan Kipas (12V)</p>
+                    <p><strong>Prinsip:</strong> Sinyal LOW/HIGH dari Arduino mengontrol relay untuk menyambung/memutus arus kipas</p>
+                    <div class="spec">
+                        <strong>Coil:</strong> 5V DC (dari Arduino)
+                    </div>
+                    <div class="spec">
+                        <strong>Contact:</strong> 250V AC / 30V DC, 10A
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>⚙️ Prinsip Kerja dan Alur Logika Sistem</h2>
+            
+            <div class="flowchart">
+                <div class="flow-step">
+                    <h4>1️⃣ Inisialisasi Sistem</h4>
+                    <p>Saat power ON, Arduino melakukan setup:</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Inisialisasi sensor DHT dan MQ-2</li>
+                        <li>Setup LCD I2C (alamat 0x27 atau 0x3F)</li>
+                        <li>Konfigurasi pin relay dan buzzer sebagai OUTPUT</li>
+                        <li>Set nilai threshold (batas aman)</li>
+                    </ul>
+                </div>
+
+                <div style="text-align: center; font-size: 2em; color: #667eea; margin: 10px 0;">↓</div>
+
+                <div class="flow-step">
+                    <h4>2️⃣ Pembacaan Data Sensor (Loop Kontinyu)</h4>
+                    <p>Arduino membaca sensor setiap interval waktu (misal: setiap 2 detik)</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Baca suhu (°C) dan kelembapan (%) dari DHT11/22</li>
+                        <li>Baca nilai analog gas dari MQ-2 (0-1023), konversi ke ppm</li>
+                        <li>Validasi data (cek error sensor)</li>
+                    </ul>
+                </div>
+
+                <div style="text-align: center; font-size: 2em; color: #667eea; margin: 10px 0;">↓</div>
+
+                <div class="flow-step">
+                    <h4>3️⃣ Tampilkan Data ke LCD</h4>
+                    <p>Update display setiap cycle:</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Baris 1: "Temp:28C Hum:65%"</li>
+                        <li>Baris 2: "Gas:250ppm"</li>
+                    </ul>
+                </div>
+
+                <div style="text-align: center; font-size: 2em; color: #667eea; margin: 10px 0;">↓</div>
+
+                <div class="flow-step">
+                    <h4>4️⃣ Evaluasi Kondisi (Decision Making)</h4>
+                    <p>Arduino membandingkan nilai sensor dengan threshold:</p>
+                    
+                    <div class="logic-box">
+                        <code><strong>IF</strong> (suhu > 30°C) <strong>OR</strong></code>
+                        <code>   (kelembapan > 70%) <strong>OR</strong></code>
+                        <code>   (gas > 300 ppm)</code>
+                        <code><strong>THEN</strong></code>
+                        <code>   kondisi = TIDAK AMAN ⚠️</code>
+                        <code><strong>ELSE</strong></code>
+                        <code>   kondisi = AMAN ✅</code>
+                    </div>
+                </div>
+
+                <div style="text-align: center; font-size: 2em; color: #667eea; margin: 10px 0;">↓</div>
+
+                <div class="flow-step">
+                    <h4>5️⃣ Aksi Kontrol (Eksekusi)</h4>
+                    <p><strong>Jika TIDAK AMAN:</strong></p>
+                    <ul style="margin-left: 20px; margin-top: 10px; color: #d32f2f;">
+                        <li>✅ Arduino kirim sinyal <strong>HIGH</strong> ke Relay → Kipas ON</li>
+                        <li>✅ Arduino kirim sinyal <strong>HIGH</strong> ke Buzzer → Alarm ON</li>
+                        <li>✅ LCD menampilkan "⚠️ PERINGATAN!"</li>
+                    </ul>
+                    
+                    <p style="margin-top: 15px;"><strong>Jika AMAN:</strong></p>
+                    <ul style="margin-left: 20px; margin-top: 10px; color: #388e3c;">
+                        <li>✅ Arduino kirim sinyal <strong>LOW</strong> ke Relay → Kipas OFF</li>
+                        <li>✅ Arduino kirim sinyal <strong>LOW</strong> ke Buzzer → Alarm OFF</li>
+                        <li>✅ LCD menampilkan "✓ Normal"</li>
+                    </ul>
+                </div>
+
+                <div style="text-align: center; font-size: 2em; color: #667eea; margin: 10px 0;">↓</div>
+
+                <div class="flow-step">
+                    <h4>6️⃣ Delay dan Ulangi</h4>
+                    <p>Sistem menunggu interval waktu (misal: 2000ms), kemudian kembali ke langkah 2</p>
+                    <p style="margin-top: 10px; color: #764ba2;"><strong>→ Loop Terus-Menerus (Real-Time Monitoring)</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📏 Tabel Threshold (Nilai Ambang Batas)</h2>
+            <table class="threshold-table">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Nilai Normal</th>
+                        <th>Threshold (Batas Aman)</th>
+                        <th>Satuan</th>
+                        <th>Aksi Jika Terlampaui</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>🌡️ Suhu</strong></td>
+                        <td>20 - 30</td>
+                        <td><strong>&gt; 30</strong></td>
+                        <td>°C</td>
+                        <td>Kipas ON + Buzzer ON</td>
+                    </tr>
+                    <tr>
+                        <td><strong>💧 Kelembapan</strong></td>
+                        <td>40 - 70</td>
+                        <td><strong>&gt; 70</strong></td>
+                        <td>%</td>
+                        <td>Kipas ON + Buzzer ON</td>
+                    </tr>
+                    <tr>
+                        <td><strong>💨 Gas Berbahaya</strong></td>
+                        <td>0 - 300</td>
+                        <td><strong>&gt; 300</strong></td>
+                        <td>ppm</td>
+                        <td>Kipas ON + Buzzer ON</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p style="margin-top: 15px; color: #666; font-style: italic;">
+                * Nilai threshold dapat disesuaikan dalam kode program sesuai kebutuhan aplikasi
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>🏗️ Arsitektur Sistem Lengkap</h2>
+            <div class="system-architecture">
+                <div class="arch-layer input-layer">
+                    <h4>📡 LAYER 1: INPUT SENSING</h4>
+                    <div class="component-list">
+                        <div class="component-item">DHT11/22 → Pin Digital</div>
+                        <div class="component-item">MQ-2 → Pin Analog A0</div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; font-size: 2em; margin: 20px 0;">⬇️</div>
+
+                <div class="arch-layer process-layer">
+                    <h4>🧠 LAYER 2: PROCESSING & DISPLAY</h4>
+                    <div class="component-list">
+                        <div class="component-item">Arduino Uno R3 (ATmega328P)</div>
+                        <div class="component-item">LCD 16x2 I2C → SDA/SCL</div>
+                    </div>
+                    <p style="margin-top: 15px; color: #555;">
+                        <strong>Logika:</strong> Compare sensor values vs threshold → Decide action
+                    </p>
+                </div>
+
+                <div style="text-align: center; font-size: 2em; margin: 20px 0;">⬇️</div>
+
+                <div class="arch-layer output-layer">
+                    <h4>⚙️ LAYER 3: OUTPUT ACTUATION</h4>
+                    <div class="component-list">
+                        <div class="component-item">Relay → Pin Digital</div>
+                        <div class="component-item">Kipas 12V → via Relay</div>
+                        <div class="component-item">Buzzer 5V → Pin Digital</div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; font-size: 1.5em; margin: 20px 0; color: #764ba2;">
+                    ⬆️ FEEDBACK LOOP ⬆️<br>
+                    <small>(Sensor terus membaca perubahan dari aksi kipas)</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📝 Keunggulan Desain Sistem</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div style="background: #e8f5e9; padding: 20px; border-radius: 10px; border-left: 5px solid #4CAF50;">
+                    <h4 style="color: #2e7d32;">✅ Otomatisasi Penuh</h4>
+                    <p>Tidak memerlukan intervensi manual, sistem bekerja 24/7</p>
+                </div>
+                <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; border-left: 5px solid #2196F3;">
+                    <h4 style="color: #1565c0;">✅ Real-Time Monitoring</h4>
+                    <p>Pemantauan kontinyu dengan response time cepat (&lt;2 detik)</p>
+                </div>
+                <div style="background: #fff3e0; padding: 20px; border-radius: 10px; border-left: 5px solid #FF9800;">
+                    <h4 style="color: #e65100;">✅ Multi-Parameter</h4>
+                    <p>Memantau 3 parameter vital sekaligus (suhu, kelembapan, gas)</p>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
