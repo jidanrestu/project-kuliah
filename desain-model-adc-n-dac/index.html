@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisasi Sistem Monitoring Ruangan - ADC & DAC</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            color: #333;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .content {
+            padding: 40px;
+            min-height: 600px;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .view-title {
+            text-align: center;
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        /* System Diagram Styles */
+        .system-diagram {
+            position: relative;
+            min-height: 500px;
+        }
+
+        .component {
+            position: absolute;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+
+        .component:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .sensor-dht {
+            top: 50px;
+            left: 50px;
+            width: 200px;
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            border: 3px solid #10b981;
+        }
+
+        .sensor-mq2 {
+            top: 220px;
+            left: 50px;
+            width: 200px;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            border: 3px solid #f97316;
+        }
+
+        .adc-box {
+            top: 250px;
+            left: 280px;
+            width: 140px;
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            border: 3px solid #f59e0b;
+            text-align: center;
+        }
+
+        .arduino {
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 280px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border: 4px solid #2563eb;
+        }
+
+        .buzzer {
+            top: 50px;
+            right: 50px;
+            width: 200px;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border: 3px solid #a855f7;
+        }
+
+        .fan {
+            top: 220px;
+            right: 50px;
+            width: 200px;
+            background: linear-gradient(135deg, #96e6a1 0%, #d4fc79 100%);
+            border: 3px solid #06b6d4;
+        }
+
+        .component-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .component-title {
+            font-weight: 700;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .component-detail {
+            font-size: 0.85em;
+            line-height: 1.5;
+        }
+
+        /* ADC Process Styles */
+        .adc-process {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            margin-top: 50px;
+        }
+
+        .process-box {
+            text-align: center;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            transition: all 0.3s;
+        }
+
+        .process-box.animate {
+            animation: pulse 1s;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .process-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .process-arrow {
+            font-size: 3em;
+            color: #667eea;
+        }
+
+        .formula-box {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            text-align: left;
+        }
+
+        .animate-btn {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .animate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* PWM Diagram Styles */
+        .pwm-process {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            margin-top: 50px;
+        }
+
+        .pwm-wave {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .wave-container {
+            display: flex;
+            align-items: flex-end;
+            height: 100px;
+            gap: 2px;
+        }
+
+        .wave-pulse {
+            flex: 1;
+            background: #8b5cf6;
+            transition: all 0.3s;
+        }
+
+        .wave-pulse.on {
+            height: 100%;
+        }
+
+        .wave-pulse.off {
+            height: 0%;
+            background: #e5e7eb;
+        }
+
+        .fan-icon-rotate {
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Info Boxes */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .info-card h3 {
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .legend {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .legend-title {
+            font-weight: 700;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+        }
+
+        .comparison-table {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .comparison-item {
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .note-box {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        /* Arrow SVG styles */
+        .arrow-line {
+            position: absolute;
+            z-index: 1;
+        }
+
+        .arrow-svg {
+            position: absolute;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .system-diagram {
+                min-height: 800px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .header p {
+                font-size: 0.9em;
+            }
+
+            .tabs {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .tab-btn {
+                width: 100%;
+            }
+
+            .system-diagram .component {
+                position: relative !important;
+                margin: 20px auto;
+                left: 0 !important;
+                right: 0 !important;
+                top: 0 !important;
+                transform: none !important;
+            }
+
+            .adc-process, .pwm-process {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .process-arrow {
+                transform: rotate(90deg);
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .comparison-table {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .content {
+                padding: 20px;
+            }
+
+            .process-box {
+                padding: 20px;
+                width: 100%;
+            }
+
+            .comparison-table {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Visualisasi Sistem Monitoring Ruangan</h1>
+            <p>ADC dan DAC untuk Proyek Arduino - Suhu, Kelembapan & Gas</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('system')">🔌 Diagram Sistem</button>
+            <button class="tab-btn" onclick="showTab('adc')">📈 Proses ADC</button>
+            <button class="tab-btn" onclick="showTab('pwm')">⚡ Simulasi DAC (PWM)</button>
+        </div>
+
+        <div class="content">
+            <!-- System Diagram -->
+            <div id="system" class="view active">
+                <h2 class="view-title">Diagram Blok Sistem Monitoring Ruangan</h2>
+                <div class="system-diagram">
+                    <!-- Sensors -->
+                    <div class="component sensor-dht">
+                        <div class="component-icon">🌡️</div>
+                        <div class="component-title">DHT11/DHT22</div>
+                        <div class="component-detail">
+                            • Sensor Digital<br>
+                            • Suhu & Kelembapan<br>
+                            • <strong>→ Data Digital</strong>
+                        </div>
+                    </div>
+
+                    <div class="component sensor-mq2">
+                        <div class="component-icon">🔥</div>
+                        <div class="component-title">MQ-2</div>
+                        <div class="component-detail">
+                            • Sensor Analog<br>
+                            • Deteksi Gas<br>
+                            • <strong>→ Sinyal Analog (0-5V)</strong>
+                        </div>
+                    </div>
+
+                    <!-- ADC -->
+                    <div class="component adc-box">
+                        <div class="component-icon">⚡</div>
+                        <div class="component-title">ADC 10-bit</div>
+                        <div class="component-detail">
+                            <strong>0-1023</strong>
+                        </div>
+                    </div>
+
+                    <!-- Arduino -->
+                    <div class="component arduino">
+                        <div class="component-icon">🖥️</div>
+                        <div class="component-title">Arduino Uno</div>
+                        <div class="component-detail">
+                            • ATmega328P<br>
+                            • ADC Internal 10-bit<br>
+                            • PWM 8-bit (Pin ~)<br>
+                            • Pemrosesan Data<br>
+                            • Kontrol Logika
+                        </div>
+                    </div>
+
+                    <!-- Actuators -->
+                    <div class="component buzzer">
+                        <div class="component-icon">🔊</div>
+                        <div class="component-title">Buzzer Aktif</div>
+                        <div class="component-detail">
+                            • Kontrol Digital<br>
+                            • ON/OFF (5V/0V)<br>
+                            • Alarm Gas
+                        </div>
+                    </div>
+
+                    <div class="component fan">
+                        <div class="component-icon">💨</div>
+                        <div class="component-title">Kipas DC 12V</div>
+                        <div class="component-detail">
+                            • Via Relay (Digital)<br>
+                            • Via PWM (Proporsional)<br>
+                            • Ventilasi Ruangan
+                        </div>
+                    </div>
+                </div>
+
+                <div class="legend">
+                    <div class="legend-title">📌 Keterangan:</div>
+                    <div class="legend-items">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);"></div>
+                            <span>Sensor Digital</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);"></div>
+                            <span>Sensor Analog + ADC</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);"></div>
+                            <span>Mikrokontroler</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);"></div>
+                            <span>Aktuator Digital</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: linear-gradient(135deg, #96e6a1 0%, #d4fc79 100%);"></div>
+                            <span>Aktuator PWM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADC Process -->
+            <div id="adc" class="view">
+                <h2 class="view-title">Proses Konversi ADC (Analog to Digital)</h2>
+                <div class="adc-process">
+                    <!-- Analog Input -->
+                    <div class="process-box" id="analogBox" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                        <div class="process-icon">🔥</div>
+                        <div style="font-size: 1.5em; font-weight: 700; margin-bottom: 10px;">Sensor MQ-2</div>
+                        <div style="font-size: 1.1em; margin-bottom: 10px;">Sinyal Analog</div>
+                        <div style="font-size: 2.5em; font-weight: 700; color: #d97706;">2.5V</div>
+                    </div>
+
+                    <div class="process-arrow">→</div>
+
+                    <!-- ADC Process -->
+                    <div class="process-box" id="adcBox" style="background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);">
+                        <div class="process-icon">⚡</div>
+                        <div style="font-size: 1.5em; font-weight: 700; margin-bottom: 10px;">ADC 10-bit</div>
+                        <div style="font-size: 0.9em; margin-bottom: 10px;">Resolusi: 2¹⁰ = 1024 level</div>
+                        <div class="formula-box">
+                            V<sub>ref</sub> = 5.0V<br>
+                            V<sub>in</sub> = 2.5V<br>
+                            <hr style="margin: 5px 0;">
+                            Digital = (V<sub>in</sub>/V<sub>ref</sub>) × 1023<br>
+                            Digital = (2.5/5.0) × 1023<br>
+                            <strong style="color: #d97706;">Digital ≈ 512</strong>
+                        </div>
+                    </div>
+
+                    <div class="process-arrow">→</div>
+
+                    <!-- Digital Output -->
+                    <div class="process-box" id="digitalBox" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <div class="process-icon">🖥️</div>
+                        <div style="font-size: 1.5em; font-weight: 700; margin-bottom: 10px;">Arduino Uno</div>
+                        <div style="font-size: 1.1em; margin-bottom: 10px;">Nilai Digital</div>
+                        <div style="font-size: 2.5em; font-weight: 700; color: #1e40af;">512</div>
+                        <div style="font-size: 0.9em; margin-top: 10px;">(Binary: 1000000000)</div>
+                    </div>
+                </div>
+
+                <div style="text-align: center;">
+                    <button class="animate-btn" onclick="animateADC()">🎬 Animasi Proses</button>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                        <h3>1️⃣ Sampling</h3>
+                        <p>ADC mengambil sampel tegangan pada pin A0 saat perintah analogRead() dieksekusi</p>
+                    </div>
+                    <div class="info-card" style="background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);">
+                        <h3>2️⃣ Kuantisasi</h3>
+                        <p>Tegangan analog dipetakan ke 1024 level digital (0-1023) berdasarkan V<sub>ref</sub></p>
+                    </div>
+                    <div class="info-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <h3>3️⃣ Output Digital</h3>
+                        <p>Mikrokontroler menerima nilai digital yang dapat diproses dalam program</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PWM Process -->
+            <div id="pwm" class="view">
+                <h2 class="view-title">Simulasi DAC dengan PWM (Pulse Width Modulation)</h2>
+                <div class="pwm-process">
+                    <!-- Digital Input -->
+                    <div class="process-box" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <div class="process-icon">🖥️</div>
+                        <div style="font-size: 1.5em; font-weight: 700; margin-bottom: 10px;">Arduino Uno</div>
+                        <div style="font-size: 1.1em; margin-bottom: 10px;">Nilai Digital PWM</div>
+                        <div style="font-size: 2.5em; font-weight: 700; color: #1e40af;">200</div>
+                        <div style="font-size: 0.9em; margin-top: 10px;">(Range: 0-255)</div>
+                    </div>
+
+                    <div class="process-arrow">→</div>
+
+                    <!-- PWM Signal -->
+                    <div class="process-box" id="pwmBox" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                        <div style="font-size: 1.5em; font-weight: 700; margin-bottom: 15px;">Sinyal PWM</div>
+                        <div class="pwm-wave">
+                            <div class="wave-container" id="waveContainer">
+                                <!-- PWM waves will be generated by JavaScript -->
+                            </div>
+                        </div>
+                        <div style="font-size: 0.9em; margin-top: 15px;">
+                            Duty Cycle: <strong>78%</strong><br>
+                            Perhitungan: 200/255 × 100% ≈ 78%<br>
+                            <strong>Tegangan Rata-rata: 3.9V</strong>
+                        </div>
+                    </div>
+
+                    <div class="process-arrow">→</div>
+
+                    <!-- Fan Output -->
+                    <div class="process-box" id="fanBox" style="background: linear-gradient(135deg, #96e6a1 0%, #d4fc79 100%);">
+                        <div class="process-icon" id="fanIcon">💨</div>
+                        <div style="font-size: 1.5em; font-weight: 700; margin-bottom: 10px;">Kipas DC 12V</div>
+                        <div style="font-size: 1.1em; margin-bottom: 10px;">Kecepatan Motor</div>
+                        <div style="font-size: 2.5em; font-weight: 700; color: #059669;">78%</div>
+                        <div style="font-size: 0.9em; margin-top: 10px;">dari kecepatan maksimum</div>
+                    </div>
+                </div>
+
+                <div style="text-align: center;">
+                    <button class="animate-btn" onclick="animatePWM()">🎬 Animasi Proses</button>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <h3 style="text-align: center; margin-bottom: 20px;">Contoh Nilai PWM dan Efeknya:</h3>
+                    <div class="comparison-table">
+                        <div class="comparison-item" style="background: #f3f4f6;">
+                            <h4 style="font-size: 1.2em; margin-bottom: 10px;">PWM = 0</h4>
+                            <p>Duty Cycle: 0%</p>
+                            <p><strong>Kipas: MATI</strong></p>
+                        </div>
+                        <div class="comparison-item" style="background: #fef3c7;">
+                            <h4 style="font-size: 1.2em; margin-bottom: 10px;">PWM = 127</h4>
+                            <p>Duty Cycle: 50%</p>
+                            <p><strong>Kipas: Setengah</strong></p>
+                        </div>
+                        <div class="comparison-item" style="background: #ccfbf1;">
+                            <h4 style="font-size: 1.2em; margin-bottom: 10px;">PWM = 200</h4>
+                            <p>Duty Cycle: 78%</p>
+                            <p><strong>Kipas: Cepat</strong></p>
+                        </div>
+                        <div class="comparison-item" style="background: #dcfce7;">
+                            <h4 style="font-size: 1.2em; margin-bottom: 10px;">PWM = 255</h4>
+                            <p>Duty Cycle: 100%</p>
+                            <p><strong>Kipas: Maksimum</strong></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="note-box">
+                    <strong>💡 Catatan:</strong> Arduino tidak memiliki DAC sejati. PWM mensimulasikan output analog dengan mengubah saklar ON/OFF sangat cepat. Motor/kipas merasakan nilai rata-rata tegangan.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all views
+            const views = document.querySelectorAll('.view');
+            views.forEach(view => view.classList.remove('active'));
+
+            // Remove active class from all buttons
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            // Show selected view
+            document.getElementById(tabName).classList.add('active');
+
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        // ADC Animation
+        function animateADC() {
+            const analogBox = document.getElementById('analogBox');
+            const adcBox = document.getElementById('adcBox');
+            const digitalBox = document.getElementById('digitalBox');
+
+            analogBox.classList.add('animate');
+            setTimeout(() => {
+                adcBox.classList.add('animate');
+            }, 300);
+            setTimeout(() => {
+                digitalBox.classList.add('animate');
+            }, 600);
+
+            setTimeout(() => {
+                analogBox.classList.remove('animate');
+                adcBox.classList.remove('animate');
+                digitalBox.classList.remove('animate');
+            }, 1500);
+        }
+
+        // PWM Animation
+        let pwmAnimating = false;
+        function animatePWM() {
+            if (pwmAnimating) return;
+            
+            pwmAnimating = true;
+            const pwmBox = document.getElementById('pwmBox');
+            const fanIcon = document.getElementById('fanIcon');
+            const fanBox = document.getElementById('fanBox');
+
+            pwmBox.classList.add('animate');
+            fanIcon.classList.add('fan-icon-rotate');
+            fanBox.classList.add('animate');
+
+            // Animate PWM waves
+            animateWaves();
+
+            setTimeout(() => {
+                pwmBox.classList.remove('animate');
+                fanIcon.classList.remove('fan-icon-rotate');
+                fanBox.classList.remove('animate');
+                pwmAnimating = false;
+            }, 3000);
+        }
+
+        // Generate PWM waves
+        function generatePWMWaves() {
+            const container = document.getElementById('waveContainer');
+            container.innerHTML = '';
+            
+            // Create 20 pulses, 78% on (200/255)
+            for (let i = 0; i < 20; i++) {
+                const pulse = document.createElement('div');
+                pulse.className = 'wave-pulse';
+                
+                if (i < 16) { // 78% of 20 ≈ 16
+                    pulse.classList.add('on');
+                } else {
+                    pulse.classList.add('off');
+                }
+                
+                container.appendChild(pulse);
+            }
+        }
+
+        function animateWaves() {
+            const pulses = document.querySelectorAll('.wave-pulse');
+            let index = 0;
+            
+            const interval = setInterval(() => {
+                if (index >= pulses.length) {
+                    clearInterval(interval);
+                    return;
+                }
+                
+                pulses[index].style.opacity = '1';
+                pulses[index].style.transform = 'scaleY(1.1)';
+                
+                setTimeout(() => {
+                    pulses[index].style.transform = 'scaleY(1)';
+                }, 100);
+                
+                index++;
+            }, 150);
+        }
+
+        // Initialize PWM waves on load
+        window.addEventListener('DOMContentLoaded', () => {
+            generatePWMWaves();
+        });
+    </script>
+</body>
+</html>
